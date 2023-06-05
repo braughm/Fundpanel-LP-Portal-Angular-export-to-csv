@@ -76,7 +76,11 @@ export class ExportToCsv {
     /**
      * Generate and Download Csv
      */
-    generateCsv(jsonData: any, shouldReturnCsv: boolean = false): void | any {
+    /**
+     * 
+     * @param replaceSpace replaces all the spaces present in the data with underscore if true.
+     */
+    generateCsv(jsonData: any, shouldReturnCsv: boolean = false, replaceSpace: boolean = false): void | any {
 
         // Make sure to reset csv data on each run
         this._csv = '';
@@ -110,10 +114,10 @@ export class ExportToCsv {
         const FileType = this._options.useTextFile ? 'plain' : 'csv';
         const fileExtension = this._options.useTextFile ? '.txt' : '.csv';
         let blob = new Blob([this._csv], { "type": "text/" + FileType + ";charset=utf8;" });
-
-        if (navigator.msSaveBlob) {
-            let filename = this._options.filename.replace(/ /g, "_") + fileExtension;
-            navigator.msSaveBlob(blob, filename);
+        const nav = (window.navigator as any);
+        if (nav.msSaveBlob) {
+            let filename = replaceSpace ? this._options.filename.replace(/ /g, "_") + fileExtension : this._options.filename + fileExtension;
+            nav.msSaveBlob(blob, filename);
         } else {
             const attachmentType = this._options.useTextFile ? 'text' : 'csv';
             let uri = 'data:attachment/'+ attachmentType +';charset=utf-8,' + encodeURI(this._csv);
@@ -121,7 +125,7 @@ export class ExportToCsv {
             link.href = URL.createObjectURL(blob);
 
             link.setAttribute('visibility', 'hidden');
-            link.download = this._options.filename.replace(/ /g, "_") + fileExtension;
+            link.download = replaceSpace ? this._options.filename.replace(/ /g, "_") + fileExtension : this._options.filename + fileExtension;
 
             document.body.appendChild(link);
             link.click();
